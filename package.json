@@ -1,6 +1,6 @@
 {
     "name": "metro",
-    "version": "2.2.1",
+    "version": "2.2.0",
     "homepage": ".",
     "dependencies": {
         "@aws-amplify/pubsub": "^5.1.15",
