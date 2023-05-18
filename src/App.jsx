@@ -8,8 +8,6 @@ import SimplePanel from "./components/SimplePanel";
 import ReactGA from 'react-ga';
 import Tr from './components/Locale';
 import AWS from 'aws-sdk';
-import AWSIoTData from 'aws-iot-device-sdk';
-
 
 class App extends Component {
 
