@@ -7,8 +7,8 @@ import { Badge, Container, Row, Col } from "reactstrap";
 import SimplePanel from "./components/SimplePanel";
 import ReactGA from 'react-ga';
 import Tr from './components/Locale';
-import { Amplify, PubSub } from "aws-amplify";
-import { AWSIoTProvider } from '@aws-amplify/pubsub';
+import { SNS } from 'aws-sdk';
+
 
 class App extends Component {
 
@@ -16,20 +16,9 @@ class App extends Component {
 		showMask: true
 	};
 
-	  
+
 	componentDidMount() {
 
-		Amplify.configure({
-			Auth: {
-			  identityPoolId: 'us-east-1:227c7f3e-340b-4c24-9905-176c3e865d93', // replace with your Identity Pool ID
-			  region: 'us-east-1' // replace with your AWS region
-			}
-		  });
-		  Amplify.addPluggable(new AWSIoTProvider({
-			   aws_pubsub_region: 'us-east-1', // replace with your AWS region
-			   aws_pubsub_endpoint: 'wss://a2lfjupb1otf51-ats.iot.us-east-1.amazonaws.com/mqtt', // replace with your IoT endpoint
-		  }));
-		  
 		// google analytics
 		ReactGA.initialize({
 			trackingId: 'UA-151010848-1',
@@ -44,72 +33,80 @@ class App extends Component {
 	}
 
 	handleButtonClick = () => {
+
+		const sns = new SNS();
+
 		const message = {
-		  metronomeID: 125, // replace with actual metronome ID
-		  inputDATA: {
-			bpm: this.state.bpm,
-			time_signature: this.state.timeSignature
-		  }
+			metronomeID: 125, // replace with actual metronome ID
+			inputDATA: {
+				bpm: this.state.bpm,
+				time_signature: this.state.timeSignature
+			}
 		};
-	  
-		PubSub.publish('user-input', message).then(() => {
-		  console.log('Message published');
-		}).catch((err) => {
-		  console.log('Error publishing message', err);
+
+		const params = {
+			Message: message,
+			TopicArn: "arn:aws:sns:us-east-1:502795161362:user-input"
+		};
+
+
+		sns.publish(params, function (err, data) {
+			if (err) {
+				console.error(err);
+			} else {
+				console.log(`Message ${params.Message} sent to the topic ${params.TopicArn}`);
+				console.log("MessageID is " + data.MessageId);
+			}
 		});
-	  }
-	  
 
-	  
+		removeLoadMask() {
+			this.setState({ showMask: false });
+		}
 
-	removeLoadMask() {
-		this.setState({ showMask: false });
+		render() {
+			return (
+				<div className="App">
+					<Container className="app-container ">
+						<Row>
+							<Col>
+								<SoundMachine ref="sm" onReady={() => this.removeLoadMask()} />
+							</Col>
+						</Row>
+						<Col>
+							<button onClick={this.handleButtonClick}>Publish BPM and Time Signature</button>
+
+						</Col>
+						<Row>
+							<Col>
+								<SimplePanel title={Tr("Keyboard controls")} className="about">
+									<div><code>{Tr("(shift) arrow up/down")}</code> - {Tr("higher/lower BPM")}</div>
+									<div><code>{Tr("arrow left/right")}</code> - {Tr("previous/next step according to plan")}</div>
+									<div><code>space, s</code> - {Tr("start/stop")}</div>
+									<div><code>esc</code> - {Tr("stop")}</div>
+								</SimplePanel>
+							</Col>
+						</Row>
+						<Row>
+							<Col>
+								<div className="footer">
+									<div><h6>If you like this app consider donation to a developer using following <Badge href="https://www.buymeacoffee.com/indiebubbler" target="blank">link</Badge></h6></div>
+									<div>Join discord using <Badge href="https://discord.gg/fAwnmVh" target="blank">this link</Badge> for feedback and improvement suggestions.</div>
+									<div>By using this site you agree to the use of cookies to store user defined presets and analytics.</div>
+
+									<div>If you want help translating this page please contact <Badge href="mailto:indiebubbler@gmail.com?subject=Feedback">indiebubbler@gmail.com</Badge>.</div>
+									<div>Made using <Badge href="https://reactjs.org/" target="blank" >React</Badge> and <Badge href="https://tonejs.github.io/" target="blank">Tone.js</Badge>.</div>
+									<div>Ideas for visualisation and presets taken from <Badge href="http://www.ethanhein.com/wp/my-nyu-masters-thesis" target="blank">Ethan Hein's site</Badge>.</div>
+									<div>&#169; IndieBubbler 2019-2020. Version 2.2</div>
+								</div>
+							</Col>
+						</Row>
+					</Container>
+					<div ref="loadMask" className={this.state.showMask === true ? 'loadmask ' : 'loadmask fadeOut'} />
+				</div>
+
+			);
+		}
+
 	}
 
-	render() {
-		return (
-			<div className="App">
-				<Container className="app-container ">
-					<Row>
-						<Col>
-							<SoundMachine ref="sm" onReady={() => this.removeLoadMask()} />
-						</Col>
-					</Row>
-					<Col>
-					<button onClick={this.handleButtonClick}>Publish BPM and Time Signature</button>
-
-					</Col>
-					<Row>
-						<Col>
-							<SimplePanel title={Tr("Keyboard controls")} className="about">
-								<div><code>{Tr("(shift) arrow up/down")}</code> - {Tr("higher/lower BPM")}</div>
-								<div><code>{Tr("arrow left/right")}</code> - {Tr("previous/next step according to plan")}</div>
-								<div><code>space, s</code> - {Tr("start/stop")}</div>
-								<div><code>esc</code> - {Tr("stop")}</div>
-							</SimplePanel>
-						</Col>
-					</Row>
-					<Row>
-						<Col>
-							<div className="footer">
-								<div><h6>If you like this app consider donation to a developer using following <Badge href="https://www.buymeacoffee.com/indiebubbler" target="blank">link</Badge></h6></div>
-								<div>Join discord using <Badge href="https://discord.gg/fAwnmVh" target="blank">this link</Badge> for feedback and improvement suggestions.</div>
-								<div>By using this site you agree to the use of cookies to store user defined presets and analytics.</div>
-
-								<div>If you want help translating this page please contact <Badge href="mailto:indiebubbler@gmail.com?subject=Feedback">indiebubbler@gmail.com</Badge>.</div>
-								<div>Made using <Badge href="https://reactjs.org/" target="blank" >React</Badge> and <Badge href="https://tonejs.github.io/" target="blank">Tone.js</Badge>.</div>
-								<div>Ideas for visualisation and presets taken from <Badge href="http://www.ethanhein.com/wp/my-nyu-masters-thesis" target="blank">Ethan Hein's site</Badge>.</div>
-								<div>&#169; IndieBubbler 2019-2020. Version 2.2</div>
-							</div>
-						</Col>
-					</Row>
-				</Container>
-				<div ref="loadMask" className={this.state.showMask === true ? 'loadmask ' : 'loadmask fadeOut'} />
-			</div>
-
-		);
-	}
-
-}
-
-export default (App);
+export default(App);
