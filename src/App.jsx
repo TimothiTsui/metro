@@ -1,21 +1,35 @@
 import React, { Component } from "react";
 import "./App.css";
-// import "./components/SoundMachine";
 import SoundMachine from "./components/SoundMachine";
 import "rc-slider/assets/index.css";
 import "bootstrap/dist/css/bootstrap.css";
 import { Badge, Container, Row, Col } from "reactstrap";
 import SimplePanel from "./components/SimplePanel";
 import ReactGA from 'react-ga';
-import Tr from './components/Locale'
+import Tr from './components/Locale';
+import { Amplify, PubSub } from "aws-amplify";
+import { AWSIoTProvider } from '@aws-amplify/pubsub';
 
 class App extends Component {
 
 	state = {
 		showMask: true
-	}
+	};
 
+	  
 	componentDidMount() {
+
+		Amplify.configure({
+			Auth: {
+			  identityPoolId: 'us-east-1:227c7f3e-340b-4c24-9905-176c3e865d93', // replace with your Identity Pool ID
+			  region: 'us-east-1' // replace with your AWS region
+			}
+		  });
+		  Amplify.addPluggable(new AWSIoTProvider({
+			   aws_pubsub_region: 'us-east-1', // replace with your AWS region
+			   aws_pubsub_endpoint: 'wss://a2lfjupb1otf51-ats.iot.us-east-1.amazonaws.com/mqtt', // replace with your IoT endpoint
+		  }));
+		  
 		// google analytics
 		ReactGA.initialize({
 			trackingId: 'UA-151010848-1',
@@ -24,11 +38,32 @@ class App extends Component {
 				cookieDomain: 'none'
 			}
 		});
+
 		ReactGA.pageview(window.location.pathname + window.location.search);
+
 	}
 
+	handleButtonClick = () => {
+		const message = {
+		  metronomeID: 125, // replace with actual metronome ID
+		  inputDATA: {
+			bpm: this.state.bpm,
+			time_signature: this.state.timeSignature
+		  }
+		};
+	  
+		PubSub.publish('user-input', message).then(() => {
+		  console.log('Message published');
+		}).catch((err) => {
+		  console.log('Error publishing message', err);
+		});
+	  }
+	  
+
+	  
+
 	removeLoadMask() {
-		this.setState({ showMask: false })
+		this.setState({ showMask: false });
 	}
 
 	render() {
@@ -40,6 +75,10 @@ class App extends Component {
 							<SoundMachine ref="sm" onReady={() => this.removeLoadMask()} />
 						</Col>
 					</Row>
+					<Col>
+					<button onClick={this.handleButtonClick}>Publish BPM and Time Signature</button>
+
+					</Col>
 					<Row>
 						<Col>
 							<SimplePanel title={Tr("Keyboard controls")} className="about">
@@ -53,7 +92,6 @@ class App extends Component {
 					<Row>
 						<Col>
 							<div className="footer">
-								{/* TODO: i18n */}
 								<div><h6>If you like this app consider donation to a developer using following <Badge href="https://www.buymeacoffee.com/indiebubbler" target="blank">link</Badge></h6></div>
 								<div>Join discord using <Badge href="https://discord.gg/fAwnmVh" target="blank">this link</Badge> for feedback and improvement suggestions.</div>
 								<div>By using this site you agree to the use of cookies to store user defined presets and analytics.</div>
@@ -74,4 +112,4 @@ class App extends Component {
 
 }
 
-export default App;
+export default (App);

@@ -3,6 +3,9 @@
     "version": "2.2.1",
     "homepage": ".",
     "dependencies": {
+        "@aws-amplify/pubsub": "^5.1.15",
+        "aws-amplify": "^5.2.1",
+        "aws-sdk": "^2.1379.0",
         "bootstrap": "^4.5.0",
         "gh-pages": "^2.2.0",
         "jquery": "^3.5.1",
