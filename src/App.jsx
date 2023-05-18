@@ -33,6 +33,11 @@ class App extends Component {
 
 	handleButtonClick = () => {
 
+		AWS.config.update({
+			region: 'us-east-1' // replace this with your region
+		  });
+		  
+
 		const iotData = new AWS.IotData({endpoint: 'a2lfjupb1otf51-ats.iot.us-east-1.amazonaws.com'});
 
 
