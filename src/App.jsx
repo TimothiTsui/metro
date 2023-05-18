@@ -7,7 +7,8 @@ import { Badge, Container, Row, Col } from "reactstrap";
 import SimplePanel from "./components/SimplePanel";
 import ReactGA from 'react-ga';
 import Tr from './components/Locale';
-import { SNS } from 'aws-sdk';
+import AWS from 'aws-sdk';
+import AWSIoTData from 'aws-iot-device-sdk';
 
 
 class App extends Component {
@@ -34,7 +35,8 @@ class App extends Component {
 
 	handleButtonClick = () => {
 
-		const sns = new SNS();
+		const iotData = new AWS.IotData({endpoint: 'a2lfjupb1otf51-ats.iot.us-east-1.amazonaws.com'});
+
 
 		const message = {
 			metronomeID: 125, // replace with actual metronome ID
@@ -44,20 +46,20 @@ class App extends Component {
 			}
 		};
 
-		const params = {
-			Message: message,
-			TopicArn: "arn:aws:sns:us-east-1:502795161362:user-input"
-		};
+		var params = {
+			topic: 'user/input',
+			payload: JSON.stringify(message),
+			qos: 0
+		  };
 
 
-		sns.publish(params, function (err, data) {
+		  iotData.publish(params, function(err, data) {
 			if (err) {
-				console.error(err);
+			  console.error("Error", err);
 			} else {
-				console.log(`Message ${params.Message} sent to the topic ${params.TopicArn}`);
-				console.log("MessageID is " + data.MessageId);
+			  console.log("Success", data);
 			}
-		});
+		  });
 	}
 
 	removeLoadMask() {
