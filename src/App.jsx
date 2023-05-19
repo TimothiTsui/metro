@@ -1,5 +1,6 @@
 import { IoTDataPlaneClient, PublishCommand } from "@aws-sdk/client-iot-data-plane";
-import Amplify, { Auth } from 'aws-amplify';
+import { Amplify } from 'aws-amplify';
+import { Auth } from '@aws-amplify/auth';
 import "bootstrap/dist/css/bootstrap.css";
 import "rc-slider/assets/index.css";
 import React, { Component } from "react";
