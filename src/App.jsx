@@ -1,13 +1,43 @@
-import React, { Component } from "react";
-import "./App.css";
-import SoundMachine from "./components/SoundMachine";
-import "rc-slider/assets/index.css";
+import { IoTDataPlaneClient, PublishCommand } from "@aws-sdk/client-iot-data-plane";
+import Amplify, { Auth } from 'aws-amplify';
 import "bootstrap/dist/css/bootstrap.css";
-import { Badge, Container, Row, Col } from "reactstrap";
-import SimplePanel from "./components/SimplePanel";
+import "rc-slider/assets/index.css";
+import React, { Component } from "react";
 import ReactGA from 'react-ga';
+import { Badge, Col, Container, Row } from "reactstrap";
+import "./App.css";
 import Tr from './components/Locale';
-import AWS from 'aws-sdk';
+import SimplePanel from "./components/SimplePanel";
+import SoundMachine from "./components/SoundMachine";
+
+async function configureClient() {
+	const credentials = await Auth.currentCredentials();
+
+	const client = new IoTDataPlaneClient({
+		region: "us-east-1",
+		credentials: {
+			accessKeyId: credentials.accessKeyId,
+			secretAccessKey: credentials.secretAccessKey,
+			sessionToken: credentials.sessionToken,
+		},
+	});
+
+	return client;
+}
+
+
+Amplify.configure({
+	Auth: {
+		// REQUIRED - Amazon Cognito Identity Pool ID
+		identityPoolId: 'us-east-1:8aa80d16-dbed-4c5c-bd37-811ff00df62f',
+		// REQUIRED - Amazon Cognito Region
+		region: 'us-east-1',
+		// OPTIONAL - Amazon Cognito User Pool ID
+		userPoolId: 'us-east-1_sMVcwbzfj',
+		// OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
+		userPoolWebClientId: 'cutkv6l3b7ep3i4s3ki0iclas',
+	}
+});
 
 class App extends Component {
 
@@ -33,14 +63,6 @@ class App extends Component {
 
 	handleButtonClick = () => {
 
-		AWS.config.update({
-			region: 'us-east-1' // replace this with your region
-		  });
-		  
-
-		const iotData = new AWS.IotData({endpoint: 'a2lfjupb1otf51-ats.iot.us-east-1.amazonaws.com'});
-
-
 		const message = {
 			metronomeID: 125, // replace with actual metronome ID
 			inputDATA: {
@@ -49,20 +71,22 @@ class App extends Component {
 			}
 		};
 
-		var params = {
-			topic: 'user/input',
-			payload: JSON.stringify(message),
-			qos: 0
-		  };
+		async function publishToIoTTopic() {
+			const client = await configureClient();
 
+			const command = new PublishCommand({
+				topic: 'user/input',
+				payload: JSON.stringify(message),
+			});
 
-		  iotData.publish(params, function(err, data) {
-			if (err) {
-			  console.error("Error", err);
-			} else {
-			  console.log("Success", data);
+			try {
+				const data = await client.send(command);
+				console.log("Data published successfully", data);
+			} catch (error) {
+				console.log("An error occurred", error);
 			}
-		  });
+		}
+
 	}
 
 	removeLoadMask() {
