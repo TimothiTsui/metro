@@ -22,8 +22,10 @@ class SoundMachine extends Component {
 		initialized: false,
 		config: InitPreset,
 		track: this.props.track,
-		timeSignature: this.props.timeSignature
-	};
+		timeSignature: this.props.timeSignature,
+		bpm: Tone.Transport.bpm.value  // Add this line to store the bpm value in the state
+};
+
 
 	transport = Tone.Transport;
 	tone = Tone;
@@ -129,27 +131,18 @@ class SoundMachine extends Component {
 	}
 
 	setBpm = bpm => {
-
 		if (isNaN(bpm) || bpm <= 0 || bpm > 1200) {
 			throw new Error("Invalid BPM value: " + bpm)
 		}
-
+	
 		if (bpm !== this.transport.bpm.value) {
 			Tone.Transport.bpm.value = bpm;
-
+	
 			document.title = bpm.toFixed(0) + ' | ' + this.documentTitle;
-
-			// the animation and overflow retrigger seems to make metronome bit jiggery, unsure if we should implement it
-			// this.refs.bpmInfo.classList.remove('bump')
-			// void this.refs.bpmInfo.offsetWidth;
-			// this.refs.bpmInfo.classList.add('bump');
-			// const bpmInfo = this.refs.bpmInfo
-			// bpmInfo.addEventListener( "animationend",  function() {
-			// 	bpmInfo.classList.remove("bump");
-			//   } );
-			this.setState({ bpm: bpm })
+			this.setState({ bpm: bpm })  // Set the state bpm to the new bpm
 		}
 	};
+	
 
 	toggle() {
 		Tone.Transport.state === 'started' ? this.stop() : this.start();
@@ -375,8 +368,9 @@ export default SoundMachine;
 
 
 SoundMachine.defaultProps = {
-	instrument: InitPreset.instrument,
-	track: InitPreset.track,
-	timeSignature: InitPreset.timeSignature,
-	onReady: function () { }
+    instrument: InitPreset.instrument,
+    track: InitPreset.track,
+    timeSignature: InitPreset.timeSignature,
+    onReady: function () { },
+    getBpm: function () { }  // Add this line
 };

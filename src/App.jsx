@@ -10,8 +10,23 @@ import "./App.css";
 import Tr from './components/Locale';
 import SimplePanel from "./components/SimplePanel";
 import SoundMachine from "./components/SoundMachine";
+// import TrackView from "./components/TrackView/TrackView";
+// async function configureClient() {
+// 	const credentials = await Auth.currentCredentials();
 
-async function configureClient() {
+// 	const client = new IoTDataPlaneClient({
+// 		region: "us-east-1",
+// 		credentials: {
+// 			accessKeyId: credentials.accessKeyId,
+// 			secretAccessKey: credentials.secretAccessKey,
+// 			sessionToken: credentials.sessionToken,
+// 		},
+// 	});
+
+// 	return client;
+// }
+
+async function publishToIoTTopic(message) {
 	const credentials = await Auth.currentCredentials();
 
 	const client = new IoTDataPlaneClient({
@@ -23,9 +38,21 @@ async function configureClient() {
 		},
 	});
 
-	return client;
-}
+	const command = new PublishCommand({
+		topic: 'user/input',
+		payload: JSON.stringify(message),
+	});
 
+	try {
+		const data = await client.send(command);
+		console.log("Data published successfully", data);
+	} catch (error) {
+		console.log("An error occurred", error);
+		const credentials = await Auth.currentCredentials();
+		console.log(credentials);
+
+	}
+}
 
 Amplify.configure({
 	Auth: {
@@ -43,8 +70,11 @@ Amplify.configure({
 class App extends Component {
 
 	state = {
-		showMask: true
-	};
+		showMask: true,
+		bpm: 120, // initial BPM value
+		timeSignature: "4/4", // initial time signature value
+	  };
+	  
 
 
 	componentDidMount() {
@@ -62,6 +92,18 @@ class App extends Component {
 
 	}
 
+	handleBpmChange = (bpm) => {
+		// update bpm in state
+		this.setState({ bpm });
+	}
+
+	handleTimeSignatureChange = (timeSignature) => {
+		// update timeSignature in state
+		this.setState({ timeSignature });
+	}
+
+
+
 	handleButtonClick = () => {
 
 		const message = {
@@ -72,21 +114,10 @@ class App extends Component {
 			}
 		};
 
-		async function publishToIoTTopic() {
-			const client = await configureClient();
 
-			const command = new PublishCommand({
-				topic: 'user/input',
-				payload: JSON.stringify(message),
-			});
+		publishToIoTTopic(message);
 
-			try {
-				const data = await client.send(command);
-				console.log("Data published successfully", data);
-			} catch (error) {
-				console.log("An error occurred", error);
-			}
-		}
+
 
 	}
 
@@ -94,13 +125,16 @@ class App extends Component {
 		this.setState({ showMask: false });
 	}
 
+
+
+
 	render() {
 		return (
 			<div className="App">
 				<Container className="app-container ">
 					<Row>
 						<Col>
-							<SoundMachine ref="sm" onReady={() => this.removeLoadMask()} />
+							<SoundMachine onReady={() => this.removeLoadMask()} getBpm={this.handleBpmChange} getTimeSignature={this.handleTimeSignatureChange} ref="sm" />
 						</Col>
 					</Row>
 					<Col>
