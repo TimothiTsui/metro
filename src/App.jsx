@@ -56,11 +56,9 @@ class App extends Component {
 
 	state = {
 		showMask: true,
-		// bpm: 120, // initial BPM value
-		// timeSignature: "4/4", // initial time signature value
-	  };
-	  
-
+		bpm: 120, // initial BPM value
+		timeSignature: "4/4" // initial time signature value
+	};
 
 	componentDidMount() {
 
@@ -80,19 +78,16 @@ class App extends Component {
 	handleBpmChange = (bpm) => {
 		// update bpm in state
 		this.setState({ bpm });
-		//this.refs.sm.getBpm(bpm);
 	}
 
 	handleTimeSignatureChange = (timeSignature) => {
-		// update timeSignature in state
 		this.setState({ timeSignature });
-		//this.refs.sm.getTimeSignature(timeSignature);
-	}
+	};
+
 
 
 
 	handleButtonClick = () => {
-
 		const message = {
 			metronomeID: 125, // replace with actual metronome ID
 			inputDATA: {
@@ -101,19 +96,13 @@ class App extends Component {
 			}
 		};
 
-
 		publishToIoTTopic(message);
-
-
-
 	}
+
 
 	removeLoadMask() {
 		this.setState({ showMask: false });
 	}
-
-
-
 
 	render() {
 		return (
@@ -121,7 +110,12 @@ class App extends Component {
 				<Container className="app-container ">
 					<Row>
 						<Col>
-							<SoundMachine onReady={() => this.removeLoadMask()} getBpm={this.handleBpmChange} handleTimeSignatureChange={this.handleTimeSignatureChange} refs="sm" />
+							<SoundMachine
+								onReady={() => this.removeLoadMask()}
+								getBpm={this.state.bpm}
+								timeSignature={this.state.timeSignature} // Add this line to pass timeSignature as prop
+								ref="sm"
+							/>
 						</Col>
 					</Row>
 					<Col>
@@ -132,7 +126,7 @@ class App extends Component {
 						<Col>
 							<SimplePanel title={Tr("Keyboard controls")} className="about">
 								<div><code>{Tr("(shift) arrow up/down")}</code> - {Tr("higher/lower BPM")}</div>
-								<div><code>{Tr("arrow left/right")}</code> - {Tr("previous/nAxt step according to plan")}</div>
+								<div><code>{Tr("arrow left/right")}</code> - {Tr("previous/next step according to plan")}</div>
 								<div><code>space, s</code> - {Tr("start/stop")}</div>
 								<div><code>esc</code> - {Tr("stop")}</div>
 							</SimplePanel>
