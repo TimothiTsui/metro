@@ -10,21 +10,6 @@ import "./App.css";
 import Tr from './components/Locale';
 import SimplePanel from "./components/SimplePanel";
 import SoundMachine from "./components/SoundMachine";
-// import TrackView from "./components/TrackView/TrackView";
-// async function configureClient() {
-// 	const credentials = await Auth.currentCredentials();
-
-// 	const client = new IoTDataPlaneClient({
-// 		region: "us-east-1",
-// 		credentials: {
-// 			accessKeyId: credentials.accessKeyId,
-// 			secretAccessKey: credentials.secretAccessKey,
-// 			sessionToken: credentials.sessionToken,
-// 		},
-// 	});
-
-// 	return client;
-// }
 
 async function publishToIoTTopic(message) {
 	const credentials = await Auth.currentCredentials();
@@ -71,8 +56,8 @@ class App extends Component {
 
 	state = {
 		showMask: true,
-		bpm: 120, // initial BPM value
-		timeSignature: "4/4", // initial time signature value
+		// bpm: 120, // initial BPM value
+		// timeSignature: "4/4", // initial time signature value
 	  };
 	  
 
@@ -95,11 +80,13 @@ class App extends Component {
 	handleBpmChange = (bpm) => {
 		// update bpm in state
 		this.setState({ bpm });
+		//this.refs.sm.getBpm(bpm);
 	}
 
 	handleTimeSignatureChange = (timeSignature) => {
 		// update timeSignature in state
 		this.setState({ timeSignature });
+		//this.refs.sm.getTimeSignature(timeSignature);
 	}
 
 
@@ -134,7 +121,7 @@ class App extends Component {
 				<Container className="app-container ">
 					<Row>
 						<Col>
-							<SoundMachine onReady={() => this.removeLoadMask()} getBpm={this.handleBpmChange} getTimeSignature={this.handleTimeSignatureChange} ref="sm" />
+							<SoundMachine onReady={() => this.removeLoadMask()} getBpm={this.handleBpmChange} handleTimeSignatureChange={this.handleTimeSignatureChange} refs="sm" />
 						</Col>
 					</Row>
 					<Col>
@@ -145,7 +132,7 @@ class App extends Component {
 						<Col>
 							<SimplePanel title={Tr("Keyboard controls")} className="about">
 								<div><code>{Tr("(shift) arrow up/down")}</code> - {Tr("higher/lower BPM")}</div>
-								<div><code>{Tr("arrow left/right")}</code> - {Tr("previous/next step according to plan")}</div>
+								<div><code>{Tr("arrow left/right")}</code> - {Tr("previous/nAxt step according to plan")}</div>
 								<div><code>space, s</code> - {Tr("start/stop")}</div>
 								<div><code>esc</code> - {Tr("stop")}</div>
 							</SimplePanel>

@@ -22,9 +22,9 @@ class SoundMachine extends Component {
 		initialized: false,
 		config: InitPreset,
 		track: this.props.track,
-		timeSignature: this.props.timeSignature,
-		bpm: Tone.Transport.bpm.value  // Add this line to store the bpm value in the state
-};
+		bpm: Tone.Transport.bpm.value,
+		timeSignature: this.props.timeSignature  // Add this line to store the timeSignature value in the state
+	};
 
 
 	transport = Tone.Transport;
@@ -130,19 +130,20 @@ class SoundMachine extends Component {
 		}
 	}
 
+
 	setBpm = bpm => {
 		if (isNaN(bpm) || bpm <= 0 || bpm > 1200) {
 			throw new Error("Invalid BPM value: " + bpm)
 		}
-	
+
 		if (bpm !== this.transport.bpm.value) {
 			Tone.Transport.bpm.value = bpm;
-	
+
 			document.title = bpm.toFixed(0) + ' | ' + this.documentTitle;
-			this.setState({ bpm: bpm })  // Set the state bpm to the new bpm
+			this.setState({ bpm: bpm })
 		}
 	};
-	
+
 
 	toggle() {
 		Tone.Transport.state === 'started' ? this.stop() : this.start();
@@ -243,10 +244,8 @@ class SoundMachine extends Component {
 								<Row>
 									<Col>
 										<Button
-											// color="primary"
 											onClick={() => this.toggle()}
 											color={this.state.isPlaying ? 'secondary' : 'light'}
-											// outline
 											block
 										>
 											{Tr("Start / Stop")}
@@ -264,14 +263,11 @@ class SoundMachine extends Component {
 										<div>
 											<AdvancedSlider
 												ref="volumeSlider"
-												// included={false}
 												min={0}
 												disableBtns={true}
 												btnStep={1}
 												max={100}
 												defaultValue={90}
-												// marks={{ 30:k '30', 200: '200', 400: '400', 600: '600', 800: '800', 1000: '1000',  1200: '1200' }}
-												// value={this.state.constantBpmSlider}
 												onChange={(newVolume) => this.onVolumeChange(newVolume)}
 											/>
 										</div>
@@ -279,14 +275,11 @@ class SoundMachine extends Component {
 										<div>
 											<AdvancedSlider
 												ref="reverbSlider"
-												// included={false}
 												min={0}
 												disableBtns={true}
 												btnStep={1}
 												max={100}
 												defaultValue={0}
-												// marks={{ 30:k '30', 200: '200', 400: '400', 600: '600', 800: '800', 1000: '1000',  1200: '1200' }}
-												// value={this.state.constantBpmSlider}
 												onChange={(newVolume) => this.onReverbChange(newVolume)}
 											/>
 										</div>
@@ -314,13 +307,12 @@ class SoundMachine extends Component {
 								ref='trackView'
 								soundLibrary={this.soundLibrary}
 								track={this.state.track}
-								// partProgress={this.state.partProgress}
 								instrument={this.state.instrument}
-								// instrumentLib={this.instrumentLib}
 								timeSignature={this.state.timeSignature}
-								// onInstrumentChanged={(trackIdx, instrument) => this.onInstrumendChanged(trackIdx, instrument)}
 								onChange={(track, timeSignature) => this.onTrackChange(track, timeSignature)}
+								onTimeSignatureChange={this.handleTimeSignatureChange}  // Add this line
 							/>
+
 						</Col>
 					</Row>
 					<Row>
@@ -368,9 +360,10 @@ export default SoundMachine;
 
 
 SoundMachine.defaultProps = {
-    instrument: InitPreset.instrument,
-    track: InitPreset.track,
-    timeSignature: InitPreset.timeSignature,
-    onReady: function () { },
-    getBpm: function () { }  // Add this line
+	instrument: InitPreset.instrument,
+	track: InitPreset.track,
+	timeSignature: InitPreset.timeSignature,
+	onReady: function () { },
+	getBpm: function () { },
+	handleTimeSignatureChange: function () { }
 };
